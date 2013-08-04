@@ -1,10 +1,82 @@
 require 'sinatra'
+require 'omniauth'
+require 'omniauth-twitter'
+require 'twitter'
+
+use Rack::Session::Cookie, :secret => 'this is the disabuse me secret'
+use OmniAuth::Builder do
+  provider :developer
+  provider :twitter, ENV['TWITTER_KEY'], ENV['TWITTER_SECRET']
+end
+# use Warden::Manager do |manager|
+#   manager.serialize_into_session do |user|
+#     user.id
+#   end
+#   manager.serialize_from_session do |id|
+#     User.get id
+#   end
+# end
+# use WardenOmniAuth do |config|
+#   config.redirect_after_callback = "/"
+#   Warden::Strategies[:omni_twitter].on_callback do |user|
+#     # Get user info from twitter
+#   end
+# end
+
+Twitter.configure do |config|
+  config.consumer_key = ENV['TWITTER_KEY']
+  config.consumer_secret = ENV['TWITTER_SECRET']
+end
 
 get '/' do
-  haml :index
+  if session[:uid].nil?
+    haml :index
+  else
+    haml :authed_index
+  end
+end
+
+get '/from/:user' do
+  twitter = Twitter::Client.new(
+    oauth_token: session[:oauth_token],
+    oauth_token_secret: session[:oauth_token_secret]
+  )
+  @tweets = twitter.search("@#{session[:twitter_handle]} from:#{params[:user]}").statuses
+end
+
+get '/auth/:provider/callback' do |provider|
+  authenticate
+  redirect '/'
+end
+
+private
+def authenticate
+  session[:uid] = auth_hash[:uid]
+  session[:twitter_handle] = auth_hash[:info][:nickname]
+  session[:oauth_token] = auth_hash[:credentials][:token]
+  session[:oauth_token_secret] = auth_hash[:credentials][:secret]
+end
+
+def auth_hash
+  request.env['omniauth.auth']
 end
 
 __END__
 
+@@ layout
+%h1 Disabuse.me
+
+%h2 Getting abuse on Twitter? You're not alone.
+
 @@ index
-.title Hello World
+%p Sign in with Twitter below to report abuse
+%a{href: "/auth/twitter"} Sign in with Twitter
+
+@@ authed_index
+%p Enter the twitter handle of whoever's giving you grief
+
+@@ from_user
+%ul
+  - @tweets.each do |t|
+    %li
+      = t.text
