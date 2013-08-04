@@ -41,7 +41,8 @@ get '/from_user' do
     oauth_token: session[:oauth_token],
     oauth_token_secret: session[:oauth_token_secret]
   )
-  search_string = "@#{session[:twitter_handle]} from:#{params[:username]}"
+  @username = params[:username]
+  search_string = "@#{session[:twitter_handle]} from:#{@username}"
   @tweets = twitter.search(search_string).statuses
   haml :from_user
 end
