@@ -36,12 +36,14 @@ get '/' do
   end
 end
 
-get '/from/:user' do
+get '/from_user' do
   twitter = Twitter::Client.new(
     oauth_token: session[:oauth_token],
     oauth_token_secret: session[:oauth_token_secret]
   )
-  @tweets = twitter.search("@#{session[:twitter_handle]} from:#{params[:user]}").statuses
+  search_string = "@#{session[:twitter_handle]} from:#{params[:username]}"
+  @tweets = twitter.search(search_string).statuses
+  haml :from_user
 end
 
 get '/auth/:provider/callback' do |provider|
@@ -60,23 +62,3 @@ end
 def auth_hash
   request.env['omniauth.auth']
 end
-
-__END__
-
-@@ layout
-%h1 Disabuse.me
-
-%h2 Getting abuse on Twitter? You're not alone.
-
-@@ index
-%p Sign in with Twitter below to report abuse
-%a{href: "/auth/twitter"} Sign in with Twitter
-
-@@ authed_index
-%p Enter the twitter handle of whoever's giving you grief
-
-@@ from_user
-%ul
-  - @tweets.each do |t|
-    %li
-      = t.text
