@@ -63,7 +63,7 @@ class Tweet
   end
 end
 
-DataMapper.finalize.auto_migrate!
+DataMapper.finalize.auto_upgrade!
 
 ### ROUTES ###
 
@@ -95,6 +95,11 @@ get '/from_user' do
   end
 
   haml :from_user
+end
+
+get '/abuser/:username' do |abusername|
+  @abuser = Abuser.first(username: abusername)
+  haml :abuser
 end
 
 get '/auth/:provider/callback' do |provider|

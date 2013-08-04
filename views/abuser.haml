@@ -1,0 +1,11 @@
+%h3
+  Here are the tweets 
+  %a{ href: "/abuser/#{@abuser.username}" }
+    = precede "@" do
+      = @abuser.username
+  has sent to everyone
+
+%ul
+  - @abuser.tweets.each do |t|
+    %li
+      = t.text
