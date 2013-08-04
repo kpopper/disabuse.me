@@ -8,6 +8,10 @@ gem 'twitter'
 # gem 'warden'
 # gem 'warden_omniauth'
 
+gem "data_mapper"
+gem "dm-postgres-adapter"
+gem "pg"
+
 group :development do
   gem 'thin'
   gem 'shotgun'
