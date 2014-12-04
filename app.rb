@@ -1,29 +1,7 @@
 require 'sinatra'
 require 'haml'
-require 'omniauth'
-require 'omniauth-twitter'
 require 'twitter'
 require 'data_mapper'
-
-use Rack::Session::Cookie, :secret => 'this is the disabuse me secret'
-use OmniAuth::Builder do
-  provider :developer
-  provider :twitter, ENV['TWITTER_KEY'], ENV['TWITTER_SECRET']
-end
-# use Warden::Manager do |manager|
-#   manager.serialize_into_session do |user|
-#     user.id
-#   end
-#   manager.serialize_from_session do |id|
-#     User.get id
-#   end
-# end
-# use WardenOmniAuth do |config|
-#   config.redirect_after_callback = "/"
-#   Warden::Strategies[:omni_twitter].on_callback do |user|
-#     # Get user info from twitter
-#   end
-# end
 
 Twitter.configure do |config|
   config.consumer_key = ENV['TWITTER_KEY']
@@ -31,6 +9,14 @@ Twitter.configure do |config|
 end
 
 DataMapper.setup(:default, 'postgres://localhost/disabuseme_dev')
+
+class User
+  include DataMapper::Resource
+  
+  property :id, Serial
+  property :username, String
+  property :identity_url, String
+end
 
 class Abuser
   include DataMapper::Resource
@@ -68,11 +54,12 @@ DataMapper.finalize.auto_upgrade!
 ### ROUTES ###
 
 get '/' do
-  if session[:uid].nil?
-    haml :index
-  else
-    haml :authed_index
-  end
+  haml :index
+end
+
+get '/home' do
+  env['warden'].authenticate!
+  haml :authed_index
 end
 
 get '/from_user' do
@@ -103,8 +90,8 @@ get '/abuser/:username' do |abusername|
 end
 
 get '/auth/:provider/callback' do |provider|
-  authenticate
-  redirect '/'
+  #authenticate
+  redirect '/home'
 end
 
 private
@@ -117,4 +104,8 @@ end
 
 def auth_hash
   request.env['omniauth.auth']
+end
+
+def current_user
+  env['warden'].user
 end

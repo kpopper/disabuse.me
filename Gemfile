@@ -5,8 +5,7 @@ gem 'haml'
 gem 'omniauth'
 gem 'omniauth-twitter'
 gem 'twitter'
-# gem 'warden'
-# gem 'warden_omniauth'
+gem 'warden'
 
 gem "data_mapper"
 gem "dm-postgres-adapter"

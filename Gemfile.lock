@@ -96,6 +96,8 @@ GEM
       multi_json (~> 1.0)
       simple_oauth (~> 0.2)
     uuidtools (2.1.4)
+    warden (1.2.3)
+      rack (>= 1.0)
 
 PLATFORMS
   ruby
@@ -112,3 +114,4 @@ DEPENDENCIES
   sinatra
   thin
   twitter
+  warden
